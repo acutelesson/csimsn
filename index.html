@@ -737,44 +737,36 @@
     }
 
     function showLeaderboard(finalTimeStr) {
-        document.getElementById('lab-screen').classList.add('hidden');
-        document.getElementById('leaderboard-screen').classList.remove('hidden');
-        
-        document.getElementById('final-score').innerText = currentScore.toFixed(2);
-        document.getElementById('final-time').innerText = finalTimeStr;
+    document.getElementById('lab-screen').classList.add('hidden');
+    document.getElementById('leaderboard-screen').classList.remove('hidden');
+    
+    document.getElementById('final-score').innerText = currentScore.toFixed(2);
+    document.getElementById('final-time').innerText = finalTimeStr;
 
-        let mockData = [
-            {name: "Sarah Lim", school: "SMK Sains", score: 8.50, time: "01:45"},
-            {name: "Ahmad Ali", school: "SMK Bandar Baru", score: 7.00, time: "02:10"},
-            {name: "Muthu", school: "SMK Jaya", score: 5.50, time: "01:30"}
-        ];
-
-        mockData.push({
-            name: userData.name + " (Anda)",
-            school: userData.school,
-            score: currentScore,
-            time: finalTimeStr
+    // Fetch the real leaderboard from your Google Sheet via doGet
+    fetch(urlGoogleScript) 
+        .then(response => response.json())
+        .then(data => {
+            const tbody = document.getElementById('leaderboard-body');
+            tbody.innerHTML = '';
+            
+            // Render the data returned from your Google Sheet
+            data.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${row.name}</td>
+                    <td>${row.school}</td>
+                    <td><b>${row.score}</b></td>
+                    <td>${row.duration}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        })
+        .catch(err => {
+            console.error("Could not load leaderboard", err);
+            document.getElementById('leaderboard-body').innerHTML = "<tr><td colspan='4'>Gagal memuatkan papan pendahulu.</td></tr>";
         });
-
-        mockData.sort((a, b) => {
-            if(b.score !== a.score) return b.score - a.score;
-            return a.time.localeCompare(b.time);
-        });
-
-        const tbody = document.getElementById('leaderboard-body');
-        tbody.innerHTML = '';
-        
-        mockData.slice(0, 5).forEach(row => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${row.name}</td>
-                <td>${row.school}</td>
-                <td><b>${row.score.toFixed(2)}</b></td>
-                <td>${row.time}</td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
+}
 </script>
 </body>
 </html>
