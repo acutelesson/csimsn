@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Siasatan CSI: Makmal Interaktif</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,700;0,900;1,400;1,700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2b6cb0;
+            --primary-light: #ebf8ff;
+            --secondary: #38b2ac;
+            --accent: #ed8936;
+            --bg-color: #f7fafc;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            max-width: 900px;
+            width: 100%;
+            border: 2px solid var(--border-color);
+        }
+
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 5px;
+            font-size: 2.2rem;
+            line-height: 1.2;
+        }
+
+        h1 em {
+            font-size: 1.4rem;
+            color: var(--text-muted);
+            font-weight: normal;
+        }
+
+        h2 {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary-light);
+            padding-bottom: 8px;
+            margin-top: 35px;
+            font-size: 1.4rem;
+        }
+
+        .input-group {
+            background-color: var(--primary-light);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border: 1px solid #bee3f8;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        @media(min-width: 768px) {
+            .input-group {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+            color: var(--text-main);
+            font-size: 0.9rem;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e0;
+            font-family: 'Nunito', sans-serif;
+            box-sizing: border-box;
+            background-color: #fff;
+        }
+
+        .briefing-box {
+            background-color: #fffaf0;
+            border-left: 5px solid var(--accent);
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .suspect-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        @media(min-width: 768px) {
+            .suspect-grid {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+        }
+
+        .suspect-card {
+            background-color: #fff;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: left;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+
+        .suspect-title {
+            font-weight: 900;
+            color: var(--primary);
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 5px;
+        }
+
+        .evidence-card {
+            background-color: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .lab-station {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        #dust-container {
+            position: relative;
+            width: 200px;
+            height: 250px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid var(--border-color);
+            background: #fff;
+            cursor: crosshair;
+        }
+
+        #fp-svg {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            opacity: 0.7;
+        }
+
+        #dust-canvas {
+            position: absolute;
+            top: 0; left: 0;
+            z-index: 2;
+        }
+
+        .tubes-container {
+            display: flex;
+            gap: 20px;
+        }
+
+        .tube-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tube {
+            width: 40px;
+            height: 120px;
+            background-color: #edf2f7;
+            border: 3px solid #cbd5e0;
+            border-top: none;
+            border-radius: 0 0 20px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .liquid {
+            position: absolute;
+            bottom: 0; width: 100%; height: 0%;
+            background-color: #e53e3e;
+            transition: height 0.5s ease;
+        }
+
+        .clumps {
+            position: absolute;
+            bottom: 5px; width: 100%; height: 60px;
+            background-image: radial-gradient(#742a2a 25%, transparent 25%);
+            background-size: 8px 8px;
+            opacity: 0;
+            transition: opacity 1s ease 0.5s;
+        }
+
+        .beaker-wrapper {
+            position: relative;
+            width: 80px; height: 100px;
+        }
+        
+        .ph-strip {
+            width: 25px; height: 120px;
+            background-color: #fefcbf;
+            border: 1px solid #ccc;
+            position: absolute;
+            top: -100px; left: 27px;
+            transition: top 1s ease, background-color 1s ease 1s;
+            z-index: 10;
+        }
+
+        .dip-active {
+            top: 10px !important;
+            background-color: #2b6cb0 !important;
+        }
+
+        .btn-action {
+            background-color: #e2e8f0;
+            color: var(--text-main);
+            border: 1px solid #cbd5e0;
+            padding: 8px 15px;
+            font-size: 14px;
+            font-weight: 700;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-action:hover:not(:disabled) {
+            background-color: var(--secondary);
+            color: white;
+            border-color: var(--secondary);
+        }
+
+        .btn-action:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-submit {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: 800;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 30px;
+            box-shadow: 0 4px 10px rgba(43, 108, 176, 0.3);
+            transition: background-color 0.2s;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .btn-submit:hover {
+            background-color: #2c5282;
+        }
+
+        .live-stats {
+            position: sticky;
+            top: 10px;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            z-index: 100;
+            font-weight: 900;
+            color: var(--primary);
+            border: 2px solid var(--primary-light);
+            margin-bottom: 20px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        th {
+            background-color: var(--primary-light);
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+
+<div id="reg-screen" class="container">
+    <h1>🕵️‍♂️ CSI: Makmal Interaktif<br><em>Siasatan Kes Forensik</em></h1>
+    <p style="text-align: center; color: var(--text-muted); margin-bottom: 30px;">
+        Sila masukkan maklumat penyiasat untuk memulakan pemasa.<br>
+        <em>Please enter investigator details to start the timer.</em>
+    </p>
+
+    <div class="input-group">
+        <div>
+            <label>👥 Nama Penuh / <em>Full Name</em>:</label>
+            <input type="text" id="p-name" placeholder="Contoh: Ahmad Ali" required>
+        </div>
+        <div>
+            <label>🏫 Sekolah / <em>School</em>:</label>
+            <input type="text" id="p-school" placeholder="Nama sekolah anda..." required>
+        </div>
+        <div>
+            <label>📍 Negeri / <em>State</em>:</label>
+            <select id="p-state" required>
+                <option value="" disabled selected>-- Pilih Negeri --</option>
+                <option value="Johor">Johor</option>
+                <option value="Kedah">Kedah</option>
+                <option value="Kelantan">Kelantan</option>
+                <option value="Melaka">Melaka</option>
+                <option value="Negeri Sembilan">Negeri Sembilan</option>
+                <option value="Pahang">Pahang</option>
+                <option value="Perak">Perak</option>
+                <option value="Perlis">Perlis</option>
+                <option value="Pulau Pinang">Pulau Pinang</option>
+                <option value="Sabah">Sabah</option>
+                <option value="Sarawak">Sarawak</option>
+                <option value="Selangor">Selangor</option>
+                <option value="Terengganu">Terengganu</option>
+                <option value="W.P. Kuala Lumpur">W.P. Kuala Lumpur</option>
+                <option value="W.P. Labuan">W.P. Labuan</option>
+                <option value="W.P. Putrajaya">W.P. Putrajaya</option>
+            </select>
+        </div>
+    </div>
+    <button class="btn-submit" onclick="startInvestigation()">MULA SIASATAN / START INVESTIGATION</button>
+</div>
+
+<div id="lab-screen" class="container hidden">
+    <div class="live-stats">
+        <div>⏱️ Masa: <span id="timer-display">00:00</span></div>
+        <div style="color: var(--secondary);">🌟 Markah Terkumpul: <span id="score-display">0.00</span> / 8.50</div>
+    </div>
+
+    <h1>Fail Kes: Misteri Formula Dicuri<br><em>Case File: The Stolen Formula</em></h1>
+
+    <h2>📋 Taklimat Kes / <em>Case Briefing</em></h2>
+    <div class="briefing-box">
+        <p style="margin: 0;">Pagi ini, sebuah formula rahsia bernilai jutaan ringgit hilang dari peti besi makmal. Forensik menemui 3 bahan bukti: <b>Kesan cap jari pada peti besi</b>, <b>titisan darah pada kaca tingkap yang pecah</b>, dan <b>sisa cecair misteri di atas meja</b>. Terdapat 3 suspek utama.</p>
+    </div>
+
+    <div class="suspect-grid">
+        <div class="suspect-card">
+            <div class="suspect-title">Suspek 1: Dr. Alina</div>
+            <p style="margin:0; font-size: 0.9rem;">
+                <b>Darah:</b> A+<br>
+                <b>Cap Jari:</b> Pusaran (Whorl)<br>
+                <b>Nota:</b> Marah kerana namanya digugurkan dari kertas kajian.<br>
+                <b>Bahan Kimia:</b> Selalu menggunakan asid (pH Rendah).
+            </p>
+        </div>
+        <div class="suspect-card">
+            <div class="suspect-title">Suspek 2: Prof. Badrul</div>
+            <p style="margin:0; font-size: 0.9rem;">
+                <b>Darah:</b> O-<br>
+                <b>Cap Jari:</b> Gerbang (Arch)<br>
+                <b>Nota:</b> Mempunyai hutang peribadi yang sangat banyak.<br>
+                <b>Bahan Kimia:</b> Menggunakan air suling neutral (pH 7).
+            </p>
+        </div>
+        <div class="suspect-card">
+            <div class="suspect-title">Suspek 3: Dr. Chandran</div>
+            <p style="margin:0; font-size: 0.9rem;">
+                <b>Darah:</b> B+<br>
+                <b>Cap Jari:</b> Gelung (Loop)<br>
+                <b>Nota:</b> Disyaki ditawarkan kerja oleh syarikat pesaing.<br>
+                <b>Bahan Kimia:</b> Pakar pelarut alkali kuat (pH Tinggi).
+            </p>
+        </div>
+    </div>
+
+    <h2>🔍 Bukti 1: Analisis Cap Jari (1.50m)</h2>
+    <div class="evidence-card">
+        <p>Berus habuk serbuk hitam pada pemegang peti besi untuk mendedahkan cap jari (0.50m). Kemudian, kenal pasti jenis corak (1.00m).</p>
+        
+        <div class="lab-station">
+            <div id="dust-container">
+                <svg id="fp-svg" viewBox="0 0 200 250">
+                    <g fill="none" stroke="#2c3e50" stroke-width="5" stroke-linecap="round">
+                        <path d="M 50 220 C 50 100, 150 100, 150 220" />
+                        <path d="M 65 220 C 65 120, 135 120, 135 220" />
+                        <path d="M 80 220 C 80 140, 120 140, 120 220" />
+                        <path d="M 95 220 C 95 160, 105 160, 105 220" />
+                        <path d="M 35 220 C 35 70, 165 70, 165 220" />
+                    </g>
+                </svg>
+                <canvas id="dust-canvas" width="200" height="250"></canvas>
+            </div>
+            
+            <div style="flex: 1; min-width: 250px;">
+                <label>Q1. Apakah corak cap jari yang ditemui?</label>
+                <select id="q-fingerprint">
+                    <option value="" disabled selected>-- Pilih Corak --</option>
+                    <option value="Arch">Gerbang (Arch)</option>
+                    <option value="Loop">Gelung (Loop)</option>
+                    <option value="Whorl">Pusaran (Whorl)</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <h2>🩸 Bukti 2: Ujian Aglutinasi Darah (2.00m)</h2>
+    <div class="evidence-card">
+        <p>Titiskan sampel darah jenayah ke dalam antibodi (0.75m). Berdasarkan tindak balas (penggumpalan), tentukan jenis darah (1.25m).</p>
+        
+        <div class="lab-station">
+            <div class="tubes-container">
+                <div class="tube-wrapper">
+                    <div class="tube" id="tube-a">
+                        <div class="liquid"></div>
+                        <div class="clumps"></div>
+                    </div>
+                    <button class="btn-action" onclick="testBlood('A', false, this)">Ujian Anti-A</button>
+                </div>
+                <div class="tube-wrapper">
+                    <div class="tube" id="tube-b">
+                        <div class="liquid"></div>
+                        <div class="clumps"></div>
+                    </div>
+                    <button class="btn-action" onclick="testBlood('B', true, this)">Ujian Anti-B</button>
+                </div>
+                <div class="tube-wrapper">
+                    <div class="tube" id="tube-rh">
+                        <div class="liquid"></div>
+                        <div class="clumps"></div>
+                    </div>
+                    <button class="btn-action" onclick="testBlood('Rh', true, this)">Ujian Anti-Rh</button>
+                </div>
+            </div>
+
+            <div style="flex: 1; min-width: 250px;">
+                <label>Q2. Darah menggumpal pada Anti-B dan Anti-Rh. Apakah jenis darah ini?</label>
+                <select id="q-blood">
+                    <option value="" disabled selected>-- Pilih Jenis Darah --</option>
+                    <option value="A+">Jenis A+</option>
+                    <option value="O-">Jenis O-</option>
+                    <option value="B+">Jenis B+</option>
+                    <option value="AB-">Jenis AB-</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <h2>🧪 Bukti 3: Ujian Kimia (1.50m)</h2>
+    <div class="evidence-card">
+        <p>Celup kertas litmus ke dalam sisa cecair (0.50m). Warna Biru/Ungu = Alkali/Bes. Merah/Jingga = Asid.</p>
+        
+        <div class="lab-station">
+            <div class="beaker-wrapper">
+                <svg viewBox="0 0 100 120" style="position: absolute; z-index: 5;">
+                    <path d="M 20 20 L 25 110 A 5 5 0 0 0 30 115 L 70 115 A 5 5 0 0 0 75 110 L 80 20 Z" fill="rgba(226, 232, 240, 0.5)" stroke="#718096" stroke-width="3"/>
+                    <path d="M 15 20 L 85 20" stroke="#718096" stroke-width="3" stroke-linecap="round"/>
+                    <path d="M 24 90 L 26 110 A 3 3 0 0 0 30 113 L 70 113 A 3 3 0 0 0 74 110 L 76 90 Z" fill="#ebf8ff"/>
+                </svg>
+                <div id="ph-strip" class="ph-strip"></div>
+            </div>
+            
+            <button class="btn-action" id="btn-dip" onclick="dipToxin(this)">Celup Kertas Litmus</button>
+
+            <div style="flex: 1; min-width: 250px;">
+                <label>Q3. Apakah sifat bahan kimia tersebut?</label>
+                <select id="q-toxin">
+                    <option value="" disabled selected>-- Pilih Sifat Kimia --</option>
+                    <option value="Asid">Berasid / Acidic (pH Rendah)</option>
+                    <option value="Neutral">Neutral (pH 7)</option>
+                    <option value="Alkali">Beralkali / Alkaline (pH Tinggi)</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <h2>⚖️ Kesimpulan Siasatan</h2>
+    <div class="evidence-card" style="background-color: #fffaf0; border-color: var(--accent);">
+        <div style="margin-bottom: 15px;">
+            <label>Q4. Berdasarkan padanan 3 bukti, siapakah pelaku utama? (3.00m)</label>
+            <select id="q-suspect">
+                <option value="" disabled selected>-- Pilih Suspek --</option>
+                <option value="S1">Dr. Alina</option>
+                <option value="S2">Prof. Badrul</option>
+                <option value="S3">Dr. Chandran</option>
+            </select>
+        </div>
+        <div>
+            <label>Q5. Apakah motif utama suspek melakukan jenayah ini? (1.50m)</label>
+            <select id="q-motive">
+                <option value="" disabled selected>-- Pilih Motif --</option>
+                <option value="Dendam">Dendam nama digugurkan dari kajian</option>
+                <option value="Hutang">Tekanan hutang peribadi</option>
+                <option value="Pesaing">Tawaran syarikat pesaing (Pengintipan)</option>
+            </select>
+        </div>
+    </div>
+
+    <button class="btn-submit" id="btn-final-submit" onclick="submitCase()">SAHKAN BUKTI & HANTAR LAPORAN</button>
+</div>
+
+<div id="leaderboard-screen" class="container hidden">
+    <h2>🏆 Papan Pendahulu / <em>Leaderboard</em></h2>
+    
+    <div style="background-color: var(--primary-light); padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 20px; border: 2px solid #bee3f8;">
+        <h3 style="margin-top:0; color: var(--primary);">Keputusan Anda / <em>Your Result</em></h3>
+        <p style="font-size: 1.2rem; margin: 5px; font-weight: bold;">Skor: <span id="final-score" style="color: var(--secondary);"></span> / 8.50</p>
+        <p style="font-size: 1.2rem; margin: 5px; font-weight: bold;">Masa Penyelesaian: <span id="final-time" style="color: var(--accent);"></span></p>
+    </div>
+    
+    <table id="leaderboard-table">
+        <thead>
+            <tr>
+                <th>Nama / <em>Name</em></th>
+                <th>Sekolah / <em>School</em></th>
+                <th>Skor / <em>Score</em></th>
+                <th>Masa / <em>Time</em></th>
+            </tr>
+        </thead>
+        <tbody id="leaderboard-body">
+            <tr><td colspan="4" style="text-align: center;">Merekod data... / <em>Logging data...</em></td></tr>
+        </tbody>
+    </table>
+    <br>
+    <button class="btn-action" style="width: 100%; padding: 15px; font-size: 1.1rem;" onclick="location.reload()">Siasat Semula / <em>Investigate Again</em></button>
+</div>
+
+<script>
+    // ⚠️ MASUKKAN URL WEB APP GOOGLE APPS SCRIPT ANDA DI SINI / INSERT YOUR GOOGLE APPS SCRIPT WEB APP URL HERE
+    const urlGoogleScript = "https://script.google.com/macros/s/AKfycbyrdvhh6fvAV0-zytKKqgTPZ5oSa5JqmtHG7ROQTbT5ElFXqODzoprEQh6LwERKmlxNwQ/exec";
+
+    let currentScore = 0.00;
+    let timeSeconds = 0;
+    let timerInterval;
+    let userData = {};
+    
+    let state = {
+        dustCompleted: false,
+        bloodTubesClicked: 0,
+        bloodCompleted: false,
+        toxinCompleted: false
+    };
+
+    function updateScoreDisplay() {
+        document.getElementById('score-display').innerText = currentScore.toFixed(2);
+    }
+
+    function addScore(points) {
+        currentScore += points;
+        updateScoreDisplay();
+    }
+
+    function startTimer() {
+        timerInterval = setInterval(() => {
+            timeSeconds++;
+            const m = Math.floor(timeSeconds / 60).toString().padStart(2, '0');
+            const s = (timeSeconds % 60).toString().padStart(2, '0');
+            document.getElementById('timer-display').innerText = `${m}:${s}`;
+        }, 1000);
+    }
+
+    function startInvestigation() {
+        const name = document.getElementById('p-name').value;
+        const school = document.getElementById('p-school').value;
+        const negeri = document.getElementById('p-state').value;
+
+        if(!name || !school || !negeri) {
+            alert("Sila lengkapkan profil penyiasat!");
+            return;
+        }
+
+        userData = { name, school, negeri };
+        document.getElementById('reg-screen').classList.add('hidden');
+        document.getElementById('lab-screen').classList.remove('hidden');
+        
+        startTimer();
+        initFingerprintCanvas();
+    }
+
+    function initFingerprintCanvas() {
+        const canvas = document.getElementById('dust-canvas');
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#a0a0a0';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        let isDrawing = false;
+        const totalPixels = canvas.width * canvas.height;
+
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX || e.touches?.[0].clientX) - rect.left;
+            const y = (e.clientY || e.touches?.[0].clientY) - rect.top;
+            return {x, y};
+        }
+
+        function draw(e) {
+            if (!isDrawing || state.dustCompleted) return;
+            e.preventDefault();
+            const pos = getPos(e);
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, 18, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function checkErased() {
+            if(state.dustCompleted) return;
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            let transparent = 0;
+            for (let i = 3; i < imageData.data.length; i += 4) {
+                if (imageData.data[i] === 0) transparent++;
+            }
+            if (transparent / totalPixels > 0.5) {
+                state.dustCompleted = true;
+                ctx.clearRect(0,0, canvas.width, canvas.height);
+                addScore(0.50);
+            }
+        }
+
+        canvas.addEventListener('mousedown', (e) => { isDrawing = true; draw(e); });
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', () => { isDrawing = false; checkErased(); });
+        canvas.addEventListener('mouseleave', () => { isDrawing = false; checkErased(); });
+    }
+
+    function testBlood(type, shouldClump, btnEl) {
+        btnEl.disabled = true;
+        const tubeDiv = document.getElementById('tube-' + type.toLowerCase());
+        tubeDiv.querySelector('.liquid').style.height = '60%';
+        if(shouldClump) {
+            tubeDiv.querySelector('.clumps').style.opacity = '1';
+        }
+        state.bloodTubesClicked++;
+        if(state.bloodTubesClicked === 3 && !state.bloodCompleted) {
+            state.bloodCompleted = true;
+            addScore(0.75);
+        }
+    }
+
+    function dipToxin(btnEl) {
+        if(state.toxinCompleted) return;
+        btnEl.disabled = true;
+        const strip = document.getElementById('ph-strip');
+        strip.classList.add('dip-active');
+        setTimeout(() => {
+            state.toxinCompleted = true;
+            addScore(0.50);
+        }, 1500);
+    }
+
+    function submitCase() {
+        clearInterval(timerInterval);
+        const btn = document.getElementById('btn-final-submit');
+        
+        const ansFP = document.getElementById('q-fingerprint').value;
+        const ansBlood = document.getElementById('q-blood').value;
+        const ansTox = document.getElementById('q-toxin').value;
+        const ansSuspect = document.getElementById('q-suspect').value;
+        const ansMotive = document.getElementById('q-motive').value;
+
+        if(!ansFP || !ansBlood || !ansTox || !ansSuspect || !ansMotive) {
+            alert("Sila jawab kesemua soalan sebelum menghantar laporan!");
+            startTimer();
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerText = "MENGIRA MARKAH & MENYIMPAN / SAVING...";
+
+        if(ansFP === 'Loop') addScore(1.00);
+        if(ansBlood === 'B+') addScore(1.25);
+        if(ansTox === 'Alkali') addScore(1.00);
+        if(ansSuspect === 'S3') addScore(3.00);
+        if(ansMotive === 'Pesaing') addScore(1.50);
+
+        const m = Math.floor(timeSeconds / 60).toString().padStart(2, '0');
+        const s = (timeSeconds % 60).toString().padStart(2, '0');
+        const finalTimeStr = `${m}:${s}`;
+
+        // Create the JSON payload that matches your Apps Script exactly
+        const payload = {
+            name: userData.name,
+            school: userData.school,
+            state: userData.negeri,
+            score: currentScore, // Sends as a number
+            duration: finalTimeStr,
+            seconds: timeSeconds // Sends total seconds for sorting
+        };
+
+        if(urlGoogleScript && urlGoogleScript !== "") {
+            // Send as a JSON string using 'no-cors' mode to bypass CORS policy blocks
+            fetch(urlGoogleScript, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(() => {
+                showLeaderboard(finalTimeStr);
+            })
+            .catch(error => {
+                console.error('Error logging data:', error);
+                showLeaderboard(finalTimeStr);
+            });
+        } else {
+            showLeaderboard(finalTimeStr);
+        }
+    }
+
+    function showLeaderboard(finalTimeStr) {
+        document.getElementById('lab-screen').classList.add('hidden');
+        document.getElementById('leaderboard-screen').classList.remove('hidden');
+        
+        document.getElementById('final-score').innerText = currentScore.toFixed(2);
+        document.getElementById('final-time').innerText = finalTimeStr;
+
+        let mockData = [
+            {name: "Sarah Lim", school: "SMK Sains", score: 8.50, time: "01:45"},
+            {name: "Ahmad Ali", school: "SMK Bandar Baru", score: 7.00, time: "02:10"},
+            {name: "Muthu", school: "SMK Jaya", score: 5.50, time: "01:30"}
+        ];
+
+        mockData.push({
+            name: userData.name + " (Anda)",
+            school: userData.school,
+            score: currentScore,
+            time: finalTimeStr
+        });
+
+        mockData.sort((a, b) => {
+            if(b.score !== a.score) return b.score - a.score;
+            return a.time.localeCompare(b.time);
+        });
+
+        const tbody = document.getElementById('leaderboard-body');
+        tbody.innerHTML = '';
+        
+        mockData.slice(0, 5).forEach(row => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${row.name}</td>
+                <td>${row.school}</td>
+                <td><b>${row.score.toFixed(2)}</b></td>
+                <td>${row.time}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+</script>
+</body>
+</html>
